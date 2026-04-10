@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tres en Raya - Jugando</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
+
+        /* Estilos del Marcador */
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            display: inline-flex;
+        }
+        .score { font-weight: bold; font-size: 28px; }
+
+        /* Estilos del Tablero */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 48px;
+            font-family: sans-serif;
+            cursor: pointer;
+            background-color: white;
+            border: none;
+            border-bottom: 4px solid #333;
+            border-right: 4px solid #333;
+            color: #333;
+        }
+        .cell:nth-child(3n) { border-right: none; }
+        .cell:nth-child(n+7) { border-bottom: none; }
+        .cell:hover:not(:disabled) { background-color: #f0f0f0; }
+        .cell:disabled { cursor: default; }
+
+        .x-color { color: #545454; font-weight: bold; }
+        .o-color { color: #e5cd2a; font-weight: bold; }
+
+        .status-box { font-size: 24px; margin-bottom: 20px; min-height: 40px;}
+        .actions { margin-top: 30px; }
+        .btn { padding: 10px 20px; font-size: 16px; margin: 0 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="scoreboard">
+        <div>
+            <div>{{ torneo.jugador1_nombre }} (X)</div>
+            <div class="score x-color">{{ torneo.puntuacion_j1 }}</div>
+        </div>
+        <div>
+            <div>Empates</div>
+            <div class="score" style="color: gray;">{{ torneo.empates }}</div>
+        </div>
+        <div>
+            <div>{{ torneo.jugador2_nombre }} (O)</div>
+            <div class="score o-color">{{ torneo.puntuacion_j2 }}</div>
+        </div>
+    </div>
+
+    <div class="status-box">
+        {% if partida.estado == 'finalizada' %}
+            {% if partida.ganador == 'Empate' %}
+                <h2>¡Es un Empate!</h2>
+            {% else %}
+                <h2 style="color: #28a745;">¡Ganador de la ronda:
+                    {% if partida.ganador == 'X' %}{{ torneo.jugador1_nombre }}{% else %}{{ torneo.jugador2_nombre }}{% endif %}!
+                </h2>
+            {% endif %}
+        {% else %}
+            <h2>Turno de:
+                {% if partida.turno_actual == 'X' %} <span class="x-color">{{ torneo.jugador1_nombre }}</span>
+                {% else %} <span class="o-color">{{ torneo.jugador2_nombre }}</span> {% endif %}
+            </h2>
+        {% endif %}
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="board">
+            {% for cell in partida.tablero %}
+                <button type="submit" name="cell" value="{{ forloop.counter0 }}" class="cell
+                    {% if cell == 'X' %}x-color{% elif cell == 'O' %}o-color{% endif %}"
+                    {% if cell != '-' or partida.estado == 'finalizada' %} disabled {% endif %}>
+                    {% if cell != '-' %}{{ cell }}{% endif %}
+                </button>
+            {% endfor %}
+        </div>
+
+        {% if partida.estado == 'finalizada' %}
+        <div class="actions">
+            <button type="submit" name="siguiente_ronda" class="btn" style="background-color: #007bff; color: white; border: none;">Jugar Siguiente Ronda</button>
+            <button type="submit" name="terminar_torneo" class="btn" style="background-color: #dc3545; color: white; border: none;">Terminar Torneo</button>
+        </div>
+        {% endif %}
+    </form>
+
+</body>
+</html>
