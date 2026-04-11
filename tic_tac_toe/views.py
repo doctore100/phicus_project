@@ -1,4 +1,8 @@
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Sum
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+
 from .models import Torneo, Partida
 
 
@@ -47,6 +51,7 @@ def jugar_partida(request, torneo_id, partida_id):
         # Si presionaron "Terminar Torneo"
         if 'terminar_torneo' in request.POST:
             torneo.activo = False
+            torneo.fecha_fin = timezone.now()
             torneo.save()
             return redirect('iniciar_torneo')  # Luego lo mandaremos a tu panel de métricas
 
@@ -81,3 +86,51 @@ def jugar_partida(request, torneo_id, partida_id):
                     partida.save()
 
     return render(request, 'tictactoe/board.html', {'torneo': torneo, 'partida': partida})
+
+
+@staff_member_required(login_url='/admin/login/')
+def dashboard_metricas(request):
+    """ Vista analítica protegida: Panel de control de métricas globales """
+
+    # 1. Métricas Generales (Cantidades totales)
+    total_torneos = Torneo.objects.count()
+    torneos_activos = Torneo.objects.filter(activo=True).count()
+    total_partidas = Partida.objects.count()
+
+    # 2. Agregaciones Matemáticas (Extrayendo totales)
+    agregados = Torneo.objects.aggregate(
+        victorias_j1=Sum('puntuacion_j1'),
+        victorias_j2=Sum('puntuacion_j2'),
+        total_empates=Sum('empates')
+    )
+
+    # Limpieza de nulos a ceros
+    victorias_x = agregados['victorias_j1'] or 0
+    victorias_o = agregados['victorias_j2'] or 0
+    empates = agregados['total_empates'] or 0
+
+    # --- MEJORA: Cálculo de Tasa de Victoria (Win Rate) ---
+    total_juegos_validos = victorias_x + victorias_o + empates
+    if total_juegos_validos > 0:
+        win_rate_x = round((victorias_x / total_juegos_validos) * 100, 1)
+        win_rate_o = round((victorias_o / total_juegos_validos) * 100, 1)
+    else:
+        win_rate_x = win_rate_o = 0
+
+    # 3. Historial para la tabla: Los últimos 10 torneos (ampliado)
+    ultimos_torneos = Torneo.objects.all().order_by('-fecha_inicio')[:10]
+
+    # 4. Empaquetado del Contexto (Limpieza visual de variables)
+    contexto = {
+        'total_torneos': total_torneos,
+        'torneos_activos': torneos_activos,
+        'total_partidas': total_partidas,
+        'victorias_x': victorias_x,
+        'victorias_o': victorias_o,
+        'empates': empates,
+        'win_rate_x': win_rate_x,
+        'win_rate_o': win_rate_o,
+        'ultimos_torneos': ultimos_torneos,
+    }
+
+    return render(request, 'tictactoe/dashboard.html', contexto)
