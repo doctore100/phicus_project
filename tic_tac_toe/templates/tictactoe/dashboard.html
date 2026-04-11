@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Analítico | Tic-Tac-Toe</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --color-x: #3b82f6; /* Azul moderno para X */
+            --color-o: #f59e0b; /* Naranja/Amarillo para O */
+            --color-draw: #9ca3af;
+        }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 30px; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px;}
+        .header h1 { margin: 0; color: #111827; }
+        .btn-back { background-color: #111827; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .btn-back:hover { background-color: #374151; }
+
+        /* Tarjetas de Métricas */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-top: 4px solid #e5e7eb; }
+        .card h3 { margin: 0 0 10px 0; color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .card .value { font-size: 32px; font-weight: 800; margin-bottom: 5px; }
+        .card .sub-text { font-size: 13px; color: var(--text-muted); }
+
+        /* Colores específicos para bordes de tarjetas */
+        .border-x { border-top-color: var(--color-x); }
+        .border-o { border-top-color: var(--color-o); }
+        .border-draw { border-top-color: var(--color-draw); }
+
+        /* Tabla Histórica */
+        .table-container { background: var(--card-bg); border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 15px 20px; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f9fafb; color: var(--text-muted); font-size: 13px; text-transform: uppercase; font-weight: 600; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f9fafb; }
+
+        /* Etiquetas visuales (Badges) */
+        .badge { padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: bold; }
+        .badge-active { background-color: #dcfce7; color: #166534; }
+        .badge-ended { background-color: #f3f4f6; color: #4b5563; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Centro de Mando | Métricas</h1>
+        <a href="{% url 'iniciar_torneo' %}" class="btn-back">← Volver al Juego</a>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="card">
+            <h3>Torneos Registrados</h3>
+            <div class="value">{{ total_torneos }}</div>
+            <div class="sub-text"><span style="color: #166534; font-weight: bold;">{{ torneos_activos }}</span> actualmente activos</div>
+        </div>
+        <div class="card">
+            <h3>Partidas Totales</h3>
+            <div class="value">{{ total_partidas }}</div>
+            <div class="sub-text">Rondas jugadas en la plataforma</div>
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="card border-x">
+            <h3>Victorias (X)</h3>
+            <div class="value">{{ victorias_x }}</div>
+            <div class="sub-text">Win Rate: <strong>{{ win_rate_x }}%</strong></div>
+        </div>
+        <div class="card border-draw">
+            <h3>Empates</h3>
+            <div class="value">{{ empates }}</div>
+            <div class="sub-text">Rondas sin decisión</div>
+        </div>
+        <div class="card border-o">
+            <h3>Victorias (O)</h3>
+            <div class="value">{{ victorias_o }}</div>
+            <div class="sub-text">Win Rate: <strong>{{ win_rate_o }}%</strong></div>
+        </div>
+    </div>
+
+    <h2 style="color: #111827; margin-top: 40px;">Últimos 10 Torneos</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Jugadores</th>
+                    <th>Marcador (X - O)</th>
+                    <th>Empates</th>
+                    <th>Estado</th>
+                    <th>Inicio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in ultimos_torneos %}
+                <tr>
+                    <td>#{{ t.id }}</td>
+                    <td><strong>{{ t.jugador1_nombre }}</strong> vs <strong>{{ t.jugador2_nombre }}</strong></td>
+                    <td style="font-weight: bold; font-size: 16px;">
+                        <span style="color: var(--color-x)">{{ t.puntuacion_j1 }}</span> - <span style="color: var(--color-o)">{{ t.puntuacion_j2 }}</span>
+                    </td>
+                    <td>{{ t.empates }}</td>
+                    <td>
+                        {% if t.activo %}
+                            <span class="badge badge-active">🟢 En Juego</span>
+                        {% else %}
+                            <span class="badge badge-ended">Cerrado</span>
+                        {% endif %}
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 14px;">{{ t.fecha_inicio|date:"d M Y, H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Aún no hay torneos registrados. ¡Ve a jugar una partida!</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
