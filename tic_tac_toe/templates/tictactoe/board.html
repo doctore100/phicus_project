@@ -57,32 +57,32 @@
 
     <div class="scoreboard">
         <div>
-            <div>{{ torneo.jugador1_nombre }} (X)</div>
-            <div class="score x-color">{{ torneo.puntuacion_j1 }}</div>
+            <div>{{ tournament.player1_name }} (X)</div>
+            <div class="score x-color">{{ tournament.score_p1 }}</div>
         </div>
         <div>
             <div>Empates</div>
-            <div class="score" style="color: gray;">{{ torneo.empates }}</div>
+            <div class="score" style="color: gray;">{{ tournament.draws }}</div>
         </div>
         <div>
-            <div>{{ torneo.jugador2_nombre }} (O)</div>
-            <div class="score o-color">{{ torneo.puntuacion_j2 }}</div>
+            <div>{{ tournament.player2_name }} (O)</div>
+            <div class="score o-color">{{ tournament.score_p2 }}</div>
         </div>
     </div>
 
     <div class="status-box">
-        {% if partida.estado == 'finalizada' %}
-            {% if partida.ganador == 'Empate' %}
+        {% if match.status == 'completed' %}
+            {% if match.winner == 'Draw' %}
                 <h2>¡Es un Empate!</h2>
             {% else %}
                 <h2 style="color: #28a745;">¡Ganador de la ronda:
-                    {% if partida.ganador == 'X' %}{{ torneo.jugador1_nombre }}{% else %}{{ torneo.jugador2_nombre }}{% endif %}!
+                    {% if match.winner == 'X' %}{{ tournament.player1_name }}{% else %}{{ tournament.player2_name }}{% endif %}!
                 </h2>
             {% endif %}
         {% else %}
             <h2>Turno de:
-                {% if partida.turno_actual == 'X' %} <span class="x-color">{{ torneo.jugador1_nombre }}</span>
-                {% else %} <span class="o-color">{{ torneo.jugador2_nombre }}</span> {% endif %}
+                {% if match.current_turn == 'X' %} <span class="x-color">{{ tournament.player1_name }}</span>
+                {% else %} <span class="o-color">{{ tournament.player2_name }}</span> {% endif %}
             </h2>
         {% endif %}
     </div>
@@ -90,19 +90,19 @@
     <form method="POST">
         {% csrf_token %}
         <div class="board">
-            {% for cell in partida.tablero %}
+            {% for cell in match.board %}
                 <button type="submit" name="cell" value="{{ forloop.counter0 }}" class="cell
                     {% if cell == 'X' %}x-color{% elif cell == 'O' %}o-color{% endif %}"
-                    {% if cell != '-' or partida.estado == 'finalizada' %} disabled {% endif %}>
+                    {% if cell != '-' or match.status == 'completed' %} disabled {% endif %}>
                     {% if cell != '-' %}{{ cell }}{% endif %}
                 </button>
             {% endfor %}
         </div>
 
-        {% if partida.estado == 'finalizada' %}
+        {% if match.status == 'completed' %}
         <div class="actions">
-            <button type="submit" name="siguiente_ronda" class="btn" style="background-color: #007bff; color: white; border: none;">Jugar Siguiente Ronda</button>
-            <button type="submit" name="terminar_torneo" class="btn" style="background-color: #dc3545; color: white; border: none;">Terminar Torneo</button>
+            <button type="submit" name="next_round" class="btn" style="background-color: #007bff; color: white; border: none;">Jugar Siguiente Ronda</button>
+            <button type="submit" name="end_tournament" class="btn" style="background-color: #dc3545; color: white; border: none;">Terminar Torneo</button>
         </div>
         {% endif %}
     </form>

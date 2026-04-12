@@ -51,18 +51,18 @@
 
     <div class="header">
         <h1>Centro de Mando | Métricas</h1>
-        <a href="{% url 'iniciar_torneo' %}" class="btn-back">← Volver al Juego</a>
+        <a href="{% url 'start_tournament' %}" class="btn-back">← Volver al Juego</a>
     </div>
 
     <div class="metrics-grid">
         <div class="card">
             <h3>Torneos Registrados</h3>
-            <div class="value">{{ total_torneos }}</div>
-            <div class="sub-text"><span style="color: #166534; font-weight: bold;">{{ torneos_activos }}</span> actualmente activos</div>
+            <div class="value">{{ total_tournaments }}</div>
+            <div class="sub-text"><span style="color: #166534; font-weight: bold;">{{ active_tournaments }}</span> actualmente activos</div>
         </div>
         <div class="card">
             <h3>Partidas Totales</h3>
-            <div class="value">{{ total_partidas }}</div>
+            <div class="value">{{ total_matches }}</div>
             <div class="sub-text">Rondas jugadas en la plataforma</div>
         </div>
     </div>
@@ -70,17 +70,17 @@
     <div class="metrics-grid">
         <div class="card border-x">
             <h3>Victorias (X)</h3>
-            <div class="value">{{ victorias_x }}</div>
+            <div class="value">{{ wins_x }}</div>
             <div class="sub-text">Win Rate: <strong>{{ win_rate_x }}%</strong></div>
         </div>
         <div class="card border-draw">
             <h3>Empates</h3>
-            <div class="value">{{ empates }}</div>
+            <div class="value">{{ draws }}</div>
             <div class="sub-text">Rondas sin decisión</div>
         </div>
         <div class="card border-o">
             <h3>Victorias (O)</h3>
-            <div class="value">{{ victorias_o }}</div>
+            <div class="value">{{ wins_o }}</div>
             <div class="sub-text">Win Rate: <strong>{{ win_rate_o }}%</strong></div>
         </div>
     </div>
@@ -99,22 +99,22 @@
                 </tr>
             </thead>
             <tbody>
-                {% for t in ultimos_torneos %}
+                {% for t in recent_tournaments %}
                 <tr>
                     <td>#{{ t.id }}</td>
-                    <td><strong>{{ t.jugador1_nombre }}</strong> vs <strong>{{ t.jugador2_nombre }}</strong></td>
+                    <td><strong>{{ t.player1_name }}</strong> vs <strong>{{ t.player2_name }}</strong></td>
                     <td style="font-weight: bold; font-size: 16px;">
-                        <span style="color: var(--color-x)">{{ t.puntuacion_j1 }}</span> - <span style="color: var(--color-o)">{{ t.puntuacion_j2 }}</span>
+                        <span style="color: var(--color-x)">{{ t.score_p1 }}</span> - <span style="color: var(--color-o)">{{ t.score_p2 }}</span>
                     </td>
-                    <td>{{ t.empates }}</td>
+                    <td>{{ t.draws }}</td>
                     <td>
-                        {% if t.activo %}
+                        {% if t.is_active %}
                             <span class="badge badge-active">🟢 En Juego</span>
                         {% else %}
                             <span class="badge badge-ended">Cerrado</span>
                         {% endif %}
                     </td>
-                    <td style="color: var(--text-muted); font-size: 14px;">{{ t.fecha_inicio|date:"d M Y, H:i" }}</td>
+                    <td style="color: var(--text-muted); font-size: 14px;">{{ t.started_at|date:"d M Y, H:i" }}</td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Aún no hay torneos registrados. ¡Ve a jugar una partida!</td></tr>

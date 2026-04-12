@@ -2,7 +2,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.iniciar_torneo, name='iniciar_torneo'),
-    path('torneo/<int:torneo_id>/partida/<int:partida_id>/', views.jugar_partida, name='jugar_partida'),
-    path('dashboard/', views.dashboard_metricas, name='dashboard_metricas'),
+    # Inicio del juego
+    path('', views.start_tournament, name='start_tournament'),
+
+    # Tablero de juego interactivo
+    path('tournament/<int:tournament_id>/match/<int:match_id>/', views.play_match, name='play_match'),
+
+    # Panel de analítica
+    path('dashboard/', views.metrics_dashboard, name='metrics_dashboard'),
 ]
