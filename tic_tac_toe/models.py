@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Torneo(models.Model):
+class Tournament(models.Model):
     """
     Represents a tournament between two players.
 
@@ -9,76 +9,75 @@ class Torneo(models.Model):
     scores for each player, the number of ties, start and end dates, and the active
     status of the tournament.
 
-    :ivar jugador1_nombre: Name of the first player.
-    :type jugador1_nombre: str
-    :ivar jugador2_nombre: Name of the second player.
-    :type jugador2_nombre: str
-    :ivar puntuacion_j1: Total score of the first player.
-    :type puntuacion_j1: int
-    :ivar puntuacion_j2: Total score of the second player.
-    :type puntuacion_j2: int
-    :ivar empates: Number of ties in the tournament.
-    :type empates: int
-    :ivar fecha_inicio: Start date and time of the tournament.
-    :type fecha_inicio: datetime
-    :ivar fecha_fin: End date and time of the tournament, if applicable.
-    :type fecha_fin: datetime or None
-    :ivar activo: Indicates whether the tournament is currently active.
-    :type activo: bool
+    :ivar player1_name: Name of the first player.
+    :type player1_name: str
+    :ivar player2_name: Name of the second player.
+    :type player2_name: str
+    :ivar score_p1: Total score of the first player.
+    :type score_p1: int
+    :ivar score_p2: Total score of the second player.
+    :type score_p2: int
+    :ivar draws: Number of ties in the tournament.
+    :type draws: int
+    :ivar started_at: Start date and time of the tournament.
+    :type started_at: datetime
+    :ivar ended_at: End date and time of the tournament, if applicable.
+    :type ended_at: datetime or None
+    :ivar is_active: Indicates whether the tournament is currently active.
+    :type is_active: bool
     """
 
-    jugador1_nombre = models.CharField(max_length=50)
-    jugador2_nombre = models.CharField(max_length=50)
+    player1_name = models.CharField(max_length=50)
+    player2_name = models.CharField(max_length=50)
 
-    # Marcador global de la sesión
-    puntuacion_j1 = models.IntegerField(default=0)
-    puntuacion_j2 = models.IntegerField(default=0)
-    empates = models.IntegerField(default=0)
+    # Global scoreboard
+    score_p1 = models.IntegerField(default=0)
+    score_p2 = models.IntegerField(default=0)
+    draws = models.IntegerField(default=0)
 
-    # Datos para tus futuras métricas y análisis de torneos
-    fecha_inicio = models.DateTimeField(auto_now_add=True)
-    fecha_fin = models.DateTimeField(null=True, blank=True)
-    activo = models.BooleanField(default=True)
+    # Analytics data
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Torneo: {self.jugador1_nombre} vs {self.jugador2_nombre}"
+        return f"Tournament: {self.player1_name} vs {self.player2_name}"
 
 
-class Partida(models.Model):
+class Match(models.Model):
     """
-    Representation of a game (Partida) linked to a tournament (Torneo).
+    Representation of a game (Match) linked to a tournament (Tournament).
 
     This class is used to define a game instance within a tournament, keeping track of
     game attributes such as the current game state, board status, current turn, and
     winner. It also includes metadata such as the creation date.
 
-    :ivar torneo: Reference to the tournament (Torneo) this game is associated with.
-    :type torneo: Torneo
-    :ivar tablero: Current state of the board represented as a string (e.g., "X-O-X----").
-    :type tablero: str
-    :ivar turno_actual: Current turn indicator, either 'X' or 'O'.
-    :type turno_actual: str
-    :ivar estado: Current state of the game. Possible values are 'en_curso' (in progress)
-        or 'finalizada' (finished).
-    :type estado: str
-    :ivar ganador: Winner of the game, which can either be 'X', 'O', or 'Empate'
-        (indicating a draw). Can be null if the game is still in progress.
-    :type ganador: str or None
-    :ivar fecha_creacion: Timestamp of when the game instance was created.
-    :type fecha_creacion: datetime
+    :ivar tournament: Reference to the tournament this game is associated with.
+    :type tournament: Tournament
+    :ivar board: Current state of the board represented as a string (e.g., "X-O-X----").
+    :type board: str
+    :ivar current_turn: Current turn indicator, either 'X' or 'O'.
+    :type current_turn: str
+    :ivar status: Current state of the game. Possible values are 'in_progress' or 'completed'.
+    :type status: str
+    :ivar winner: Winner of the game, which can either be 'X', 'O', or 'Draw'.
+        Can be null if the game is still in progress.
+    :type winner: str or None
+    :ivar created_at: Timestamp of when the game instance was created.
+    :type created_at: datetime
     """
-    torneo = models.ForeignKey(Torneo, on_delete=models.CASCADE, related_name='partidas')
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='matches')
 
-    # Estado del tablero ("X-O-X----")
-    tablero = models.CharField(max_length=9, default='---------')
-    turno_actual = models.CharField(max_length=1, default='X')
+    # Board state ("X-O-X----")
+    board = models.CharField(max_length=9, default='---------')
+    current_turn = models.CharField(max_length=1, default='X')
 
-    estado = models.CharField(max_length=20, default='en_curso')  # 'en_curso', 'finalizada'
+    status = models.CharField(max_length=20, default='in_progress')  # 'in_progress', 'completed'
 
-    # Puede ser 'X' (Gana J1), 'O' (Gana J2), o 'Empate'
-    ganador = models.CharField(max_length=10, null=True, blank=True)
+    # Can be 'X' (P1 wins), 'O' (P2 wins), or 'Draw'
+    winner = models.CharField(max_length=10, null=True, blank=True)
 
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Ronda de {self.torneo.jugador1_nombre} vs {self.torneo.jugador2_nombre}"
+        return f"Round of {self.tournament.player1_name} vs {self.tournament.player2_name}"
