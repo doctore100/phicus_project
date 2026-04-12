@@ -1,0 +1,54 @@
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    env_file:
+      - .env
+
+  web:
+    build: .
+    restart: unless-stopped
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static_volume:/app/staticfiles
+    env_file:
+      - .env
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django.rule=Host(`${DJANGO_ALLOWED_HOSTS}`)" # Lee del .env
+      - "traefik.http.routers.django.entrypoints=websecure"
+      - "traefik.http.routers.django.tls.certresolver=myresolver"
+      - "traefik.http.services.django.loadbalancer.server.port=8000"
+
+  traefik:
+    image: traefik:v2.10
+    restart: unless-stopped
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirección automática de HTTP a HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Configuración Let's Encrypt
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      # Usamos sintaxis de interpolación de Docker para inyectar el email desde el .env
+      - "--certificatesresolvers.myresolver.acme.email=${TRAEFIK_CERT_EMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+
+volumes:
+  mariadb_data:
+  static_volume:
+  letsencrypt:
