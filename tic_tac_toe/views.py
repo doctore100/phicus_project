@@ -7,7 +7,20 @@ from .models import Tournament, Match
 
 
 def check_winner(board_str):
-    """ Evaluates the board string and returns 'X', 'O', 'Draw', or None """
+    """
+    Determines the winner of a Tic-Tac-Toe game given a string representing the game board. The board is
+    assumed to be a string of length 9 where each character represents a cell on the grid. Cells can be
+    either 'X', 'O', or '-' (for empty). Horizontal, vertical, and diagonal combinations are checked for a
+    winner. If all cells are filled and no winning combination is found, it results in a draw. If the game
+    is still ongoing, None is returned.
+
+    :param board_str: A string representing the Tic-Tac-Toe board of size 9. Each character must be either
+        'X', 'O', or '-' (for empty cells).
+    :type board_str: str
+    :return: The symbol of the winner ('X' or 'O') if there is a winner, 'Draw' if all cells are filled
+        without a winner, or None if the game is still ongoing.
+    :rtype: str or None
+    """
     combinations = [
         (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Horizontal
         (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Vertical
@@ -22,7 +35,17 @@ def check_winner(board_str):
 
 
 def start_tournament(request):
-    """ View to input names without login and start the tournament """
+    """
+    Starts a new tournament and handles the setup of the first match. This function processes
+    a POST request to create a tournament with two players and initializes the first match.
+
+    :param request: The HTTP request object containing the request details.
+    :type request: HttpRequest
+    :return: An HTTP redirect to the play_match page with the appropriate tournament and match IDs
+        if the request method is POST. If the request method is not POST, renders the tournament
+        setup page.
+    :rtype: HttpResponse
+    """
     if request.method == 'POST':
         # We will also update the HTML to send 'player1' instead of 'jugador1' later
         p1 = request.POST.get('player1')
@@ -92,7 +115,17 @@ def play_match(request, tournament_id, match_id):
 
 @staff_member_required(login_url='/admin/login/')
 def metrics_dashboard(request):
-    """ Protected analytics view: Global metrics dashboard """
+    """
+    Renders the metrics dashboard for staff members, providing key statistics and historical data
+    around tournaments, matches, and player performance in a descriptive format. The generated
+    dashboard includes information about total and active tournaments, match outcomes, player win
+    rates, and a history of recent tournaments.
+
+    :param request: The HTTP request object representing the client’s request.
+    :type request: HttpRequest
+    :return: An HTTP response object that renders the metrics dashboard with the computed context.
+    :rtype: HttpResponse
+    """
 
     # 1. General Metrics
     total_tournaments = Tournament.objects.count()
