@@ -19,7 +19,7 @@ services:
       - db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.django.rule=Host(`${DJANGO_ALLOWED_HOSTS}`)" # Lee del .env
+      - "traefik.http.routers.django.rule=Host(`${DJANGO_ALLOWED_HOSTS}`)"
       - "traefik.http.routers.django.entrypoints=websecure"
       - "traefik.http.routers.django.tls.certresolver=myresolver"
       - "traefik.http.services.django.loadbalancer.server.port=8000"
