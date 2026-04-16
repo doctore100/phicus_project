@@ -1,33 +1,49 @@
-# Phicus Project - Tic Tac Toe
+# Project Documentation: Tic Tac Toe
 
-A Django-based Tic Tac Toe application that supports tournaments between two players, round tracking, and a metrics dashboard for tournament analytics.
+## Project Overview
+This project is a web-based **Tic Tac Toe** application built with Django. It supports a tournament-style gameplay where two players can compete in multiple rounds. The application tracks scores, manages game states, and provides a detailed analytics dashboard for staff members to monitor overall performance and tournament history.
 
-## Features
+## Production Environment
+The project is currently live and accessible at:
+- **Production URL**: [https://tictactoe.idruiz.com](https://tictactoe.idruiz.com)
 
-- **Tournament System**: Start a tournament between two players and play multiple rounds.
-- **Interactive Board**: A responsive Tic Tac Toe board for local multiplayer.
-- **Analytics Dashboard**: A staff-only dashboard to view global statistics, including:
-  - Total tournaments and matches played.
-  - Total wins for Player X and Player O.
-  - Draw counts and win rates.
-  - Recent tournament history.
-- **Dockerized Environment**: Ready for development and production using Docker and Docker Compose.
-- **HTTPS Ready**: Configured with Traefik and Let's Encrypt for automatic SSL certificates.
+## Key Features
+- **Tournament System**: Players can start a tournament by entering their names. The system tracks the overall score (wins for Player X, wins for Player O, and draws).
+- **Interactive Gameplay**: A responsive board for local multiplayer (same screen).
+- **Analytics Dashboard**: A restricted area (`/dashboard/`) for staff members that displays:
+    - Total tournaments and matches played.
+    - Global win rates for Player X and Player O.
+    - Historical data of the last 10 tournaments.
+- **Automated SSL**: Integrated with **Traefik** and **Let's Encrypt** for automatic HTTPS certificate management.
 
-## Project Structure
+## Technical Stack
+- **Backend**: Django 5.x
+- **Database**: MariaDB 10.11
+- **WSGI Server**: Gunicorn
+- **Reverse Proxy**: Traefik v2.10
+- **Containerization**: Docker & Docker Compose
+- **Dependency Management**: Poetry
 
-- `config/`: Django project configuration (settings, URLs, WSGI/ASGI).
-- `tic_tac_toe/`: Main application logic.
-  - `models.py`: Database schema for `Tournament` and `Match`.
-  - `views.py`: Logic for game flow and analytics.
-  - `templates/`: HTML templates for the game and dashboard.
-- `Dockerfile` & `compose.yml`: Containerization settings.
-- `pyproject.toml` & `poetry.lock`: Dependency management with Poetry.
+## Infrastructure & Deployment
+The application is fully dockerized, consisting of three main services:
+1.  **db**: MariaDB database for persistent storage of tournaments and matches.
+2.  **web**: Django application served via Gunicorn.
+3.  **traefik**: Edge router handling SSL termination and routing traffic to the web service.
+
+### Environment Configuration
+Critical settings are managed via environment variables defined in the `.env` file, including:
+- `DJANGO_ALLOWED_HOSTS`: Set to `tictactoe.idruiz.com` for production.
+- `DEBUG`: Set to `0` (False) in production.
+- `DATABASE_URL` configurations (SQL_ENGINE, SQL_DATABASE, etc.).
+- `TRAEFIK_CERT_EMAIL`: Used for Let's Encrypt registration.
+
+## Data Model
+- **Tournament**: Stores player names, cumulative scores, and timing information (`started_at`, `ended_at`).
+- **Match**: Represents an individual round within a tournament, storing the board state (as a 9-character string) and the winner.
 
 ## Getting Started
 
 ### Prerequisites
-
 - [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
 - [Poetry](https://python-poetry.org/) (optional, for local development without Docker)
 
@@ -42,12 +58,12 @@ A Django-based Tic Tac Toe application that supports tournaments between two pla
 2.  **Configure environment variables**:
     Create a `.env` file in the root directory and configure the following variables (refer to `compose.yml` and `config/settings.py`):
     ```env
-    DEBUG=False
+    DEBUG=0
     SECRET_KEY=your-secret-key
-    DJANGO_ALLOWED_HOSTS=localhost
+    DJANGO_ALLOWED_HOSTS=tictactoe.idruiz.com
     SQL_ENGINE=django.db.backends.mysql
-    SQL_DATABASE=phicus_db
-    SQL_USER=user
+    SQL_DATABASE=tictactoedb
+    SQL_USER=phicus_admin
     SQL_PASSWORD=password
     SQL_HOST=db
     SQL_PORT=3306
@@ -56,7 +72,7 @@ A Django-based Tic Tac Toe application that supports tournaments between two pla
 
 3.  **Run with Docker Compose**:
     ```bash
-    docker-compose up --build
+    docker-compose up -d --build
     ```
     This will start the MariaDB database, the Django web application (via Gunicorn), and the Traefik reverse proxy.
 
@@ -71,15 +87,12 @@ A Django-based Tic Tac Toe application that supports tournaments between two pla
     ```
 
 ### Usage
-
-- **Play the Game**: Navigate to `http://localhost` (or your configured host) to start a new tournament.
-- **View Dashboard**: Access the analytics at `http://localhost/dashboard/`. You will be prompted to log in with your superuser credentials.
-- **Admin Interface**: Manage data directly at `http://localhost/admin/`.
+- **Play the Game**: Navigate to `https://tictactoe.idruiz.com` (or `http://localhost` if running locally) to start a new tournament.
+- **View Dashboard**: Access the analytics at `/dashboard/`. You will be prompted to log in with your superuser credentials.
+- **Admin Interface**: Manage data directly at `/admin/`.
 
 ## Development
-
 To run the project locally without Docker:
-
 1.  Install dependencies:
     ```bash
     poetry install
@@ -93,6 +106,11 @@ To run the project locally without Docker:
     poetry run python manage.py runserver
     ```
 
-## License
+## Contact & Maintenance
+For maintenance or updates, ensure that the `.env` file is properly configured and the Docker services are running:
+```bash
+docker-compose up -d
+```
 
+## License
 This project is licensed under the GNU General Public License v3.0
