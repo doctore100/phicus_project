@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from tic_tac_toe import views
 
 urlpatterns = [
     # Inicio del juego
